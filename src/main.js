@@ -8,8 +8,16 @@ import './assets/css/global.css'
 import './assets/font/iconfont.css'
 // axios
 import axios from 'axios'
-Vue.prototype.$http = axios
+
 axios.defaults.baseURL = 'http://renoblog.xyz/api/private/v1/'
+// 请求拦截器，对发起请求的一个预处理
+axios.interceptors.request.use(config => {
+  // config为请求对象，config.header为请求头的信息
+  config.headers.Authorization = window.sessionStorage.getItem('token')
+  // 最后一定要返回config，固定写法
+  return config
+})
+Vue.prototype.$http = axios
 
 Vue.config.productionTip = false
 

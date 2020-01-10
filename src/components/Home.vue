@@ -10,13 +10,14 @@
     <el-container>
       <el-aside :width="isCollapsed?'64px':'200px'">
         <div class="toggle-btn" @click="toggleCollapse">|||</div>
-        <el-menu :collapse="isCollapsed" :collapse-transition="false" :unique-opened="true" background-color="#333744" text-color="#fff" active-text-color="#409eff">
+        <el-menu :default-active="activePath" :router="true" :collapse="isCollapsed" :collapse-transition="false"
+                 :unique-opened="true" background-color="#333744" text-color="#fff" active-text-color="#409eff">
           <el-submenu :index="item.id+''" v-for="item in menuList" :key="item.id">
             <template slot="title">
               <i :class="iconsObj[item.id]"></i>
               <span>{{item.authName}}</span>
             </template>
-            <el-menu-item :index="i.id+''" v-for="i in item.children" :key="i.id">
+            <el-menu-item :index="'/'+i.path" v-for="i in item.children" :key="i.id" @click="saveNavState('/'+i.path)">
               <template slot="title">
                 <i class="el-icon-menu"></i>
                 <span>{{i.authName}}</span>
@@ -25,7 +26,10 @@
           </el-submenu>
         </el-menu>
       </el-aside>
-      <el-main>Main</el-main>
+      <el-main>
+<!--        路由占位符-->
+        <router-view></router-view>
+      </el-main>
     </el-container>
   </el-container>
 </template>
@@ -35,7 +39,9 @@ export default {
   name: 'Home',
   data() {
     return {
+      // 侧边栏数据
       menuList: [],
+      // 侧边栏的图标对象
       iconsObj: {
         '125': 'iconfont icon-user',
         '103': 'iconfont icon-tijikongjian',
@@ -43,7 +49,10 @@ export default {
         '102': 'iconfont icon-danju',
         '145': 'iconfont icon-baobiao'
       },
-      isCollapsed: false
+      // 左边菜单是否折叠
+      isCollapsed: false,
+      // 被激活的链接地址
+      activePath: ''
     }
   },
   methods: {
@@ -61,14 +70,22 @@ export default {
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.menuList = res.data
     },
-    toggleCollapse () {
-      console.log(111)
+    // 折叠侧边栏
+    toggleCollapse() {
       this.isCollapsed = !this.isCollapsed
+    },
+    // 保存链接的激活状态（刷新页面）
+    saveNavState(path) {
+      console.log(path)
+      window.sessionStorage.setItem('activePath', path)
+      this.activePath = path
     }
   },
   // 页面一加载就开始请求侧边栏数据，在created(){}中
   created () {
     this.getMenuList()
+    // 二级菜单的高亮显示
+    this.activePath = sessionStorage.getItem('activePath')
   }
 }
 </script>

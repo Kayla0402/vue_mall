@@ -12,12 +12,12 @@
         <el-row :gutter="20">
 <!--          搜索框-->
           <el-col :span="8">
-            <el-input placeholder="请输入内容">
-              <el-button slot="append" icon="el-icon-search"></el-button>
+            <el-input placeholder="请输入内容" v-model="queryInfo.query" clearable @clear="getUserList">
+              <el-button slot="append" icon="el-icon-search" @click="getUserList"></el-button>
             </el-input>
           </el-col>
           <el-col :span="3">
-            <el-button type="primary">添加用户</el-button>
+            <el-button type="primary" @click="addUserDialog=true">添加用户</el-button>
           </el-col>
         </el-row>
 <!--        用户列表-->
@@ -30,7 +30,7 @@
           <el-table-column prop="mg_state" label="状态">
             <!--作用域插槽，定义成scope，且通过scope.row获取这一行的数据，且作用域插槽会覆盖prop-->
             <template slot-scope="scope">
-              <el-switch v-model="scope.row.mg_state">
+              <el-switch v-model="scope.row.mg_state" @change="userStateChanged(scope.row)">
               </el-switch>
             </template>
           </el-table-column>
@@ -59,6 +59,29 @@
           :total="total">
         </el-pagination>
       </el-card>
+<!--      添加用户的提示框Dialog-->
+      <el-dialog @close="addDialogClose" title="提示" :visible.sync="addUserDialog" width="50%">
+<!--        dialog主题区域-->
+        <el-form ref="addDialogRef" label-width="70px" :rules="addUserRules" :model="addUserInfo">
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model="addUserInfo.username"></el-input>
+          </el-form-item>
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="addUserInfo.password"></el-input>
+          </el-form-item>
+          <el-form-item label="电话" prop="tel">
+            <el-input v-model="addUserInfo.tel"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input v-model="addUserInfo.email"></el-input>
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="addUserDialog = false">取 消</el-button>
+          <el-button type="primary" @click="addUser">确 定</el-button>
+        </span>
+      </el-dialog>
+
     </div>
 </template>
 
@@ -66,24 +89,69 @@
 export default {
   name: 'User',
   data() {
+    // 自定义手机号码的校验规则
+    var checkTel = (rule, value, cb) => {
+      const regTel = /^(0|86|17951)?(13[0-9]|15[012356789]|17[678]|18[0-9]|14[57])[0-9]{8}$/
+      if (regTel.test(value)) {
+        return cb()
+      }
+      cb(new Error('请输入合法的手机号码444'))
+    }
+    var checkEmail = (rule, value, cb) => {
+      const regEmail = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-])+/
+      if (regEmail.test(value)) {
+        return cb()
+      }
+      cb(new Error('请输入正确的邮箱444'))
+    }
     return {
       queryInfo: {
         query: '',
         // 当前页数
         pagenum: 1,
         // 每页展示多少条
-        pagesize: 1
+        pagesize: 2
       },
       userList: [],
       // 总用户数量
-      total: 0
+      total: 0,
+      // 添加用户的提示框的显示与隐藏
+      addUserDialog: false,
+      // 添加用户的表单信息
+      addUserInfo: {
+        username: '',
+        tel: '',
+        email: '',
+        password: ''
+      },
+      // 添加用户的表单验证
+      addUserRules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+        ],
+        tel: [
+          { required: true, message: '请输入手机号码', trigger: 'blur' },
+          // { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' },
+          { validator: checkTel, trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          // { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' },
+          { validator: checkEmail, trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
+        ]
+      }
     }
   },
   methods: {
     // 获取用户列表数据
     async getUserList() {
       const { data: res } = await this.$http.get('users', { params: this.queryInfo })
-      console.log(res)
+      // console.log(res)
       if (res.meta.status !== 200) return this.$message.error('获取用户列表失败')
       this.userList = res.data.users
       this.total = res.data.total
@@ -99,6 +167,33 @@ export default {
       console.log(page)
       this.queryInfo.pagenum = page
       this.getUserList()
+    },
+    // 更新用户的状态，先获取用户的状态，请求接口，更改状态的数据
+    async userStateChanged(userInfo) {
+      // console.log(userInfo)
+      const { data: res } = await this.$http.put(`users/${userInfo.id}/state/${userInfo.mg_state}`)
+      // console.log(res)
+      if (res.meta.status !== 200) {
+        // 添加用户失败// return直接返回，不往下进行 ，切switch状态不改变
+        userInfo.mg_state = !userInfo.mg_state
+        return this.$message.error(res.meta.msg)
+      }
+      this.$message.success(res.meta.msg)
+    },
+    // 添加用户表单关闭，重置表单数据
+    addDialogClose() {
+      this.$refs.addDialogRef.resetFields()
+    },
+    // 添加用户确认按钮点击
+    addUser() {
+      // 确认按钮点击关闭对话框
+      // this.addUserDialog = false
+      // 不能直接发起请求，需先对form表单进行校验，所以的校验通过之后再请求
+      this.$refs.addDialogRef.validata(valid => {
+        console.log(valid)
+        // if (!valid) return
+        // 校验通过，发起请求
+      })
     }
   },
   created() {

@@ -69,8 +69,8 @@
           <el-form-item label="密码" prop="password">
             <el-input v-model="addUserInfo.password"></el-input>
           </el-form-item>
-          <el-form-item label="电话" prop="tel">
-            <el-input v-model="addUserInfo.tel"></el-input>
+          <el-form-item label="电话" prop="mobile">
+            <el-input v-model="addUserInfo.mobile"></el-input>
           </el-form-item>
           <el-form-item label="邮箱" prop="email">
             <el-input v-model="addUserInfo.email"></el-input>
@@ -120,7 +120,7 @@ export default {
       // 添加用户的表单信息
       addUserInfo: {
         username: '',
-        tel: '',
+        mobile: '',
         email: '',
         password: ''
       },
@@ -130,7 +130,7 @@ export default {
           { required: true, message: '请输入用户名', trigger: 'blur' },
           { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
         ],
-        tel: [
+        mobile: [
           { required: true, message: '请输入手机号码', trigger: 'blur' },
           // { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' },
           { validator: checkTel, trigger: 'blur' }
@@ -186,13 +186,18 @@ export default {
     },
     // 添加用户确认按钮点击
     addUser() {
-      // 确认按钮点击关闭对话框
-      // this.addUserDialog = false
       // 不能直接发起请求，需先对form表单进行校验，所以的校验通过之后再请求
-      this.$refs.addDialogRef.validata(valid => {
-        console.log(valid)
-        // if (!valid) return
+      this.$refs.addDialogRef.validate(async valid => {
+        // console.log(valid)
+        if (!valid) return
         // 校验通过，发起请求
+        const { data: res } = await this.$http.post('users', this.addUserInfo)
+        if (res.meta.status !== 201) this.$message.error(res.meta.msg)
+        this.$message.success(res.meta.msg)
+        // 添加用户成功会关闭对话框
+        this.addUserDialog = false
+        // 添加了用户之后要刷新数据，重新获取用户列表的最新信息
+        this.getUserList()
       })
     }
   },

@@ -105,7 +105,9 @@ export default {
         ]
       },
       // 显示分配权限的对话框
-      showRightDialogVisible: false
+      showRightDialogVisible: false,
+      // 分配权限的所有数据
+      rightsList:[]
     }
   },
   methods: {
@@ -180,6 +182,7 @@ export default {
       const { data: res } = await this.$http.get('rights/tree')
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       console.log(res)
+      this.rightsList = res.data
       this.showRightDialogVisible = true
     }
   },

@@ -37,11 +37,11 @@
           <!--分配角色-->
           <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
             <el-table-column label="操作" min-width="180">
-              <template>
+              <template slot-scope="scope">
                 <!--编辑按钮-->
-                <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
+                <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)"></el-button>
                 <!--删除按钮-->
-                <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+                <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeUserById(scope.row.id)"></el-button>
                 <!--分配角色按钮-->
                 <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
               </template>
@@ -60,7 +60,7 @@
         </el-pagination>
       </el-card>
 <!--      添加用户的提示框Dialog-->
-      <el-dialog @close="addDialogClose" title="提示" :visible.sync="addUserDialog" width="50%">
+      <el-dialog @close="addDialogClose" title="添加用户信息" :visible.sync="addUserDialog" width="50%">
 <!--        dialog主题区域-->
         <el-form ref="addDialogRef" label-width="70px" :rules="addUserRules" :model="addUserInfo">
           <el-form-item label="用户名" prop="username">
@@ -79,6 +79,25 @@
         <span slot="footer" class="dialog-footer">
           <el-button @click="addUserDialog = false">取 消</el-button>
           <el-button type="primary" @click="addUser">确 定</el-button>
+        </span>
+      </el-dialog>
+<!--修改用户的提示框Dialog-->
+      <el-dialog @close="editDialogClose" title="修改用户信息" :visible.sync="editUserDialog" width="50%">
+        <!--        dialog主题区域-->
+        <el-form ref="editDialogRef" label-width="70px" :rules="editFormRules" :model="editForm">
+          <el-form-item label="用户名">
+            <el-input v-model="editForm.username" disabled></el-input>
+          </el-form-item>
+          <el-form-item label="电话" prop="mobile">
+            <el-input v-model="editForm.mobile"></el-input>
+          </el-form-item>
+          <el-form-item label="邮箱" prop="email">
+            <el-input v-model="editForm.email"></el-input>
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="editUserDialog = false">取 消</el-button>
+          <el-button type="primary" @click="editUserInfo">确 定</el-button>
         </span>
       </el-dialog>
 
@@ -144,6 +163,23 @@ export default {
           { required: true, message: '请输入密码', trigger: 'blur' },
           { min: 3, max: 10, message: '长度在 3 到 10 个字符', trigger: 'blur' }
         ]
+      },
+      // 修改用户提示框的显示与隐藏
+      editUserDialog: false,
+      // 查询到的用户信息对象，要编辑的
+      editForm: {
+
+      },
+      // 修改用户的表单验证
+      editFormRules: {
+        mobile: [
+          { required: true, message: '请输入手机号码', trigger: 'blur' },
+          { validator: checkTel, trigger: 'blur' }
+        ],
+        email: [
+          { required: true, message: '请输入邮箱', trigger: 'blur' },
+          { validator: checkEmail, trigger: 'blur' }
+        ]
       }
     }
   },
@@ -164,7 +200,7 @@ export default {
     },
     // 分页--currentPage 改变时会触发--切换第几页数据展示的时候
     handleCurrentChange(page) {
-      console.log(page)
+      // console.log(page)
       this.queryInfo.pagenum = page
       this.getUserList()
     },
@@ -199,6 +235,51 @@ export default {
         // 添加了用户之后要刷新数据，重新获取用户列表的最新信息
         this.getUserList()
       })
+    },
+    // 展示编辑用户的对话框
+    async showEditDialog(id) {
+      this.editUserDialog = true
+      const { data: res } = await this.$http.get('users/' + id)
+      console.log(res)
+      if (res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg)
+      }
+      this.editForm = res.data
+      this.editUserDialog = true
+    },
+    // 关闭修改用户的表单弹框再次点开时重置表单，恢复到刚开始获取到的数据，如果用户不保存数据，则下次再次弹框的时候回去最原始没有修改的用户信息
+    editDialogClose() {
+      this.$refs.editDialogRef.resetFields()
+    },
+    // 修改弹框确定按钮时，校验表单，然后成功后调用接口保存数据
+    editUserInfo() {
+      this.$refs.editDialogRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.put('users/' + this.editForm.id, { email: this.editForm.email, mobile: this.editForm.mobile })
+        // console.log(res)
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success(res.meta.msg)
+        this.editUserDialog = false
+        // 修改信息成功，刷新数据
+        this.getUserList()
+      })
+    },
+    // 删除用户信息
+    async removeUserById (id) {
+      const confirmResult = await this.$confirm('是否删除此用户?', '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).catch(err => err)
+      // console.log(confirmResult)   catch是用来捕获取消的信息的
+      // 如果用户取消了删除，返回是cancel，如果确认删除，则返回confirm
+      if (confirmResult !== 'confirm') return this.$message.info('已取消删除')
+      // 调用接口 + 刷新数据列表
+      const { data: res } = await this.$http.delete('users/' + id)
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.$message.success(res.meta.msg)
+      this.getUserList()
     }
   },
   created() {

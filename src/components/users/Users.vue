@@ -43,7 +43,7 @@
                 <!--删除按钮-->
                 <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeUserById(scope.row.id)"></el-button>
                 <!--分配角色按钮-->
-                <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+                <el-button type="warning" icon="el-icon-setting" size="mini" @click="setRole(scope.row)"></el-button>
               </template>
             </el-table-column>
           </el-tooltip>
@@ -98,6 +98,42 @@
         <span slot="footer" class="dialog-footer">
           <el-button @click="editUserDialog = false">取 消</el-button>
           <el-button type="primary" @click="editUserInfo">确 定</el-button>
+        </span>
+      </el-dialog>
+<!--分配权限的提示框Dialog-->
+      <el-dialog @close="roleDialogClose" title="分配权限" :visible.sync="setRoleDialogVisible" width="50%">
+        <!--        dialog主题区域-->
+        <p>当前用户：{{userInfo.username}}</p>
+        <p>当前角色：{{userInfo.role_name}}</p>
+        <p>
+          <span>分配新角色:</span>
+          <el-select v-model="selectedRoleId" placeholder="请选择">
+            <!--：label看到的文本值：value是记录真正选择的值-->
+            <el-option
+              v-for="item in rolesList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id">
+            </el-option>
+          </el-select>
+
+<!--          <el-dropdown size="medium">-->
+<!--            <el-button type="primary" class="dropdownBtn">-->
+<!--              请选择<i class="el-icon-arrow-down el-icon&#45;&#45;right"></i>-->
+<!--            </el-button>-->
+<!--            <el-dropdown-menu slot="dropdown">-->
+<!--              <el-dropdown-item>黄金糕</el-dropdown-item>-->
+<!--              <el-dropdown-item>狮子头</el-dropdown-item>-->
+<!--              <el-dropdown-item>螺蛳粉</el-dropdown-item>-->
+<!--              <el-dropdown-item>双皮奶</el-dropdown-item>-->
+<!--              <el-dropdown-item>蚵仔煎</el-dropdown-item>-->
+<!--            </el-dropdown-menu>-->
+<!--          </el-dropdown>-->
+
+        </p>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
         </span>
       </el-dialog>
 
@@ -180,7 +216,17 @@ export default {
           { required: true, message: '请输入邮箱', trigger: 'blur' },
           { validator: checkEmail, trigger: 'blur' }
         ]
-      }
+      },
+      // 分配权限选中用户的id
+      selectRoleId: '',
+      // 分配权限的dialog显示与否
+      setRoleDialogVisible: false,
+      // 分配权限的当前用户信息
+      userInfo: {},
+      // 分配权限的所有角色
+      rolesList: [],
+      // 分配权限角色的选择
+      selectedRoleId: ''
     }
   },
   methods: {
@@ -280,6 +326,34 @@ export default {
       if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
       this.$message.success(res.meta.msg)
       this.getUserList()
+    },
+    // 分配角色
+    async setRole(userInfo) {
+      this.selectRoleId = userInfo.id
+      // 获取所有的角色的数据
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) return this.$message.error('获取用户列表失败')
+      this.rolesList = res.data
+      console.log(this.rolesList)
+      this.userInfo = userInfo
+      // 对话框的显示
+      this.setRoleDialogVisible = true
+    },
+    // 确认分配角色
+    async saveRoleInfo () {
+      // 先判断用户有没有选择角色，如果选择了在进行请求接口
+      if (!this.selectedRoleId) return this.$message.warning('请选择用户角色')
+      const { data: res } = await this.$http.put(`users/${this.selectRoleId}/role`, { rid: this.selectedRoleId })
+      if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+      this.$message.success(res.meta.msg)
+      this.getUserList()
+      this.setRoleDialogVisible = false
+    },
+    // 分配角色dialog关闭
+    roleDialogClose() {
+      this.selectedRoleId = ''
+      this.userInfo = ''
+      this.selectRoleId = ''
     }
   },
   created() {
@@ -289,5 +363,18 @@ export default {
 </script>
 
 <style scoped>
+  .dropdownBtn{
+    color: #333!important;
+    background-color: #fff!important;
+    border-color: #eee!important;
+    margin-left: 5px!important;
+    width: 160px!important;
+  }
+  .el-icon-arrow-down{
+    margin-left: 50px;
+  }
+  .el-dropdown-menu{
+    width: 160px!important;
+  }
 
 </style>

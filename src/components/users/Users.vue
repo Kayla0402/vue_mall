@@ -116,20 +116,6 @@
               :value="item.id">
             </el-option>
           </el-select>
-
-<!--          <el-dropdown size="medium">-->
-<!--            <el-button type="primary" class="dropdownBtn">-->
-<!--              请选择<i class="el-icon-arrow-down el-icon&#45;&#45;right"></i>-->
-<!--            </el-button>-->
-<!--            <el-dropdown-menu slot="dropdown">-->
-<!--              <el-dropdown-item>黄金糕</el-dropdown-item>-->
-<!--              <el-dropdown-item>狮子头</el-dropdown-item>-->
-<!--              <el-dropdown-item>螺蛳粉</el-dropdown-item>-->
-<!--              <el-dropdown-item>双皮奶</el-dropdown-item>-->
-<!--              <el-dropdown-item>蚵仔煎</el-dropdown-item>-->
-<!--            </el-dropdown-menu>-->
-<!--          </el-dropdown>-->
-
         </p>
         <span slot="footer" class="dialog-footer">
           <el-button @click="setRoleDialogVisible = false">取 消</el-button>
@@ -363,18 +349,4 @@ export default {
 </script>
 
 <style scoped>
-  .dropdownBtn{
-    color: #333!important;
-    background-color: #fff!important;
-    border-color: #eee!important;
-    margin-left: 5px!important;
-    width: 160px!important;
-  }
-  .el-icon-arrow-down{
-    margin-left: 50px;
-  }
-  .el-dropdown-menu{
-    width: 160px!important;
-  }
-
 </style>

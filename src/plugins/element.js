@@ -3,7 +3,7 @@ import {
   Button, Form, FormItem, Input, Message,
   Container, Header, Main, Aside, Menu, Submenu, MenuItem, Breadcrumb,
   BreadcrumbItem, Card, Row, Col, Table, TableColumn, Switch, Tooltip,
-  Pagination, Dialog, MessageBox, Tag, Tree, Dropdown, DropdownMenu, DropdownItem,
+  Pagination, Dialog, MessageBox, Tag, Tree,
   Select, Option
 } from 'element-ui'
 
@@ -31,9 +31,6 @@ Vue.use(Pagination)
 Vue.use(Dialog)
 Vue.use(Tag)
 Vue.use(Tree)
-Vue.use(Dropdown)
-Vue.use(DropdownMenu)
-Vue.use(DropdownItem)
 Vue.use(Select)
 Vue.use(Option)
 Vue.prototype.$message = Message

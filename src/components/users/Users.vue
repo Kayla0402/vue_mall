@@ -151,7 +151,7 @@ export default {
         // 当前页数
         pagenum: 1,
         // 每页展示多少条
-        pagesize: 2
+        pagesize: 4
       },
       userList: [],
       // 总用户数量
@@ -219,7 +219,7 @@ export default {
     // 获取用户列表数据
     async getUserList() {
       const { data: res } = await this.$http.get('users', { params: this.queryInfo })
-      // console.log(res)
+      console.log(res)
       if (res.meta.status !== 200) return this.$message.error('获取用户列表失败')
       this.userList = res.data.users
       this.total = res.data.total

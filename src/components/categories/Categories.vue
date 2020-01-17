@@ -67,7 +67,7 @@ export default {
       },
       // 总分类的数量
       total: 0,
-      // 添加分类dialog显示
+      // 添加分类dialog显示o
       addCateDialog: false,
       // 分类的所有数据
       cateList: []

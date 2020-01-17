@@ -8,6 +8,9 @@ import './assets/css/global.css'
 import './assets/font/iconfont.css'
 // axios
 import axios from 'axios'
+// 树形图
+import TreeTable from 'vue-table-with-tree-grid'
+Vue.component('tree-table', TreeTable)
 
 axios.defaults.baseURL = 'http://renoblog.xyz/api/private/v1/'
 // 请求拦截器，对发起请求的一个预处理

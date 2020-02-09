@@ -14,6 +14,7 @@ Vue.component('tree-table', TreeTable)
 
 // axios.defaults.baseURL = 'http://renoblog.xyz/api/private/v1/'
 axios.defaults.baseURL = 'http://39.106.149.154:8888/api/private/v1/'
+// axios.defaults.baseURL = 'http://119.3.183.37:8888/api/private/v1/'
 // 请求拦截器，对发起请求的一个预处理
 axios.interceptors.request.use(config => {
   // config为请求对象，config.header为请求头的信息

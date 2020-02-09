@@ -11,6 +11,23 @@ import axios from 'axios'
 // 树形图
 import TreeTable from 'vue-table-with-tree-grid'
 Vue.component('tree-table', TreeTable)
+/*
+* 全局时间格式化过滤器
+* dateFormat--过滤器的名称，function为处理函数，function的参数为原始数据
+* dt.getMonth() + 1 + ''--将月份转为字符串，
+* padStart(参1，参2）为字符串的方法，参1为总长度要求多少位，参2的意思是不足总长度用参2补齐
+* */
+Vue.filter('dateFormat', function(originVal) {
+  const dt = new Date(originVal)
+  const y = dt.getFullYear()
+  const m = (dt.getMonth() + 1 + '').padStart(2, '0')
+  const d = (dt.getDay() + '').padStart(2, '0')
+  const hh = (dt.getHours() + '').padStart(2, '0')
+  const mm = (dt.getMinutes() + '').padStart(2, '0')
+  const ss = (dt.getSeconds() + '').padStart(2, '0')
+  // return `yyyy-mm-dd hh:mm:ss`
+  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
+})
 
 // axios.defaults.baseURL = 'http://renoblog.xyz/api/private/v1/'
 axios.defaults.baseURL = 'http://39.106.149.154:8888/api/private/v1/'

@@ -10,8 +10,8 @@ import Goods from '../components/goods/Goods'
 import Categories from '../components/categories/Categories'
 import Params from '../components/params/Params'
 import Add from '../components/goods/Add'
-Vue.use(VueRouter)
 
+Vue.use(VueRouter)
 const routes = [
   {
     path: '',

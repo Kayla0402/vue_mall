@@ -17,6 +17,8 @@ module.exports = {
       }
     ],
     // 发布产生时候的数组
-    ...prodPlugins
+    ...prodPlugins,
+    // 路由懒加载
+    '@babel/plugin-syntax-dynamic-import'
   ]
 }
